@@ -12,7 +12,7 @@ def act_loop(env, agent, num_episodes):
            renderit = True
 
         printing = False
-        agent.printEpsilon(episode) 
+        agent.printEpsilon()
         for t in range(MAX_EPISODE_LENGTH):
             if renderit:
                 env.render()

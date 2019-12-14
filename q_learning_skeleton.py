@@ -8,6 +8,13 @@ MAX_EPISODE_LENGTH = 500
 DISCOUNT = 0.9
 LEARNINGRATE = 0.1
 
+
+ENABLE_DECAY = True
+
+# Only used if ENABLE_DECAY is disabled
+STATIC_EPSILON = 0.05
+
+# Only used if ENABLE_DCEAY is enabled
 MAX_EPSILON = 1
 MIN_EPSILON = 0.1
 DECAY_EPSILON = 1
@@ -32,6 +39,8 @@ class QLearner():
         self.name = "Agent_R1"
         self.discount = DISCOUNT
         self.learning_rate = LEARNINGRATE  #learning_rate = alpha
+        self.epsilon = 1 # just to initalize
+
       	# Initalize Q table #
         self.q_table = np.zeros([env.observation_space.n, env.action_space.n]); #Stores Q(s,a) for all s,a
 
@@ -47,13 +56,16 @@ class QLearner():
 
     # Returns an action based on current state
     def select_action(self, state, episode):
-        normalized_episode = (episode / NUM_EPISODES)
-        epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * np.exp(-DECAY_EPSILON * normalized_episode)
+        if(ENABLE_DECAY):
+            normalized_episode = (episode / NUM_EPISODES)
+            self.epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * np.exp(-DECAY_EPSILON * normalized_episode)
+        else:
+            self.epsilon = STATIC_EPSILON
 #        print("epsilon: %f" % epsilon)
         # "Roll dice" to check whether to attempt random action #
         p = random.random()
 
-        if (p <= epsilon):
+        if (p <= self.epsilon):
             # Random action:
             random_action = self.env.action_space.sample() #A random action is sampled from the action space
             return random_action
@@ -70,7 +82,5 @@ class QLearner():
         print(self.name)
         print("Agent Report:")
 
-    def printEpsilon(self, episode):
-        normalized_episode = (episode / NUM_EPISODES)
-        epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * np.exp(-DECAY_EPSILON * normalized_episode)
-        print("epsilon: %f" % epsilon)
+    def printEpsilon(self):
+        print("epsilon: %f" % self.epsilon)
