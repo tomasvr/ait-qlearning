@@ -5,26 +5,27 @@ import gym
 def act_loop(env, agent, num_episodes):
     for episode in range(num_episodes):
         state = env.reset()
-        #TODO: reset reward?
         print('---episode %d---' % episode)
-        renderit = False
-        if episode % 10 == 0:
-            renderit = True
-        renderit = True
 
+        renderit = False
+        if episode % 100 == 0:
+           renderit = True
+
+        printing = False
+        agent.printEpsilon(episode) 
         for t in range(MAX_EPISODE_LENGTH):
             if renderit:
                 env.render()
-            printing=True
+
+#            printing = True
             if t % 500 == 499:
                 printing = True
 
             if printing:
-                print('---stage %d---' % t)
+                print('EPISODE: %d ---stage %d---' % (episode, t))
                 agent.report()
-                print("state:", state)
 
-            action = agent.select_action(state)
+            action = agent.select_action(state, episode)
             new_state, reward, done, info = env.step(action)
             if printing:
                 print("act:", action)
@@ -37,7 +38,6 @@ def act_loop(env, agent, num_episodes):
                 env.render()
                 agent.report()
                 break
-
     env.close()
 
 
@@ -53,5 +53,6 @@ if __name__ == "__main__":
 
     ql = QLearner(env) # can alter parameters here
     act_loop(env, ql, NUM_EPISODES)
+    print(ql.q_table)
 
 

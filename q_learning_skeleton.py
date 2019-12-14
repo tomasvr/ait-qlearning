@@ -4,10 +4,13 @@ import simple_grid
 
 NUM_EPISODES = 1000
 MAX_EPISODE_LENGTH = 500
-DEFAULT_DISCOUNT = 0.9
+
+DISCOUNT = 0.9
 LEARNINGRATE = 0.1
-EPSILON = 0.5
-#DEFAULT_ENV = simple_grid.DrunkenWalkEnv(map_name="walkInThePark")
+
+MAX_EPSILON = 1
+MIN_EPSILON = 0.1
+DECAY_EPSILON = 1
 
 """
     "DOCUMENTTION" LINKS:
@@ -23,13 +26,12 @@ class QLearner():
     """
 
     #WARNING: edit main fn! Signiture changed to take in environment first!
-    def __init__(self, env, discount=DEFAULT_DISCOUNT, learning_rate=LEARNINGRATE, switch_rate=EPSILON):
+    def __init__(self, env):
         # Initialize class properties #
         self.env = env
         self.name = "Agent_R1"
-        self.discount = discount
-        self.learning_rate = learning_rate #learning_rate = alpha
-        self.switch_rate = switch_rate #switch_rate = epsilon: probability of not picking "greedy" action
+        self.discount = DISCOUNT
+        self.learning_rate = LEARNINGRATE  #learning_rate = alpha
       	# Initalize Q table #
         self.q_table = np.zeros([env.observation_space.n, env.action_space.n]); #Stores Q(s,a) for all s,a
 
@@ -44,18 +46,21 @@ class QLearner():
         	self.learning_rate * (reward)
 
     # Returns an action based on current state
-    def select_action(self, state):
+    def select_action(self, state, episode):
+        normalized_episode = (episode / NUM_EPISODES)
+        epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * np.exp(-DECAY_EPSILON * normalized_episode)
+#        print("epsilon: %f" % epsilon)
         # "Roll dice" to check whether to attempt random action #
         p = random.random()
 
-        if (p <= self.switch_rate):
+        if (p <= epsilon):
             # Random action:
             random_action = self.env.action_space.sample() #A random action is sampled from the action space
             return random_action
         else:
             # Greedy action: Calculate max{a}(Q_old(s,a)) from table of Q_values
-            print("picking action")
-            print(self.q_table[state,:])
+#            print("picking action")
+#            print(self.q_table[state,:])
             greedy_action = np.argmax(self.q_table[state,:])
             return greedy_action
         pass
@@ -64,4 +69,8 @@ class QLearner():
     def report(self):
         print(self.name)
         print("Agent Report:")
-        print(self.q_table)
+
+    def printEpsilon(self, episode):
+        normalized_episode = (episode / NUM_EPISODES)
+        epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * np.exp(-DECAY_EPSILON * normalized_episode)
+        print("epsilon: %f" % epsilon)
