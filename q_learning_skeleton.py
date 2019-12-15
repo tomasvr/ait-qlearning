@@ -71,9 +71,9 @@ class QLearner():
             return random_action
         else:
             # Greedy action: Calculate max{a}(Q_old(s,a)) from table of Q_values
-#            print("picking action")
-#            print(self.q_table[state,:])
-            greedy_action = np.argmax(self.q_table[state,:])
+            # If multiple actions have the highest value pick one at random
+            maxargs = np.argwhere(self.q_table[state,:] == np.amax(self.q_table[state,:]))
+            greedy_action = np.random.choice(maxargs.flatten())
             return greedy_action
         pass
 
